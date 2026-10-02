@@ -16,7 +16,7 @@ const API = (() => {
   const LS_USER_KEY = 'mba_user';
   // Baked-in default so this works out of the box; Settings can still
   // override it (e.g. if you redeploy and get a new /exec URL).
-  const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbygmSCWTIc60yHKxqrBvE-DJZHat8H4EswxTHLMhRmaix6Pk2UM02E6WxYqQY1aDmexRg/exec';
+  const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbyL1W1tzfsofyNwksXwTJYfa0qs3XFaFVFtVRIjD7T5gICfUT9uzLRct44Kze1AB8ar/exec';
   const USERS = ['S', 'K'];
 
   function getUrl(){
