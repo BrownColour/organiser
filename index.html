@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Trimester — MBA Organiser</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>" />
+<script>
+  // Applied synchronously, before the stylesheet paints anything, so the
+  // right theme (dark/light) and profile accent (S=red, K=lavender) are
+  // correct from the very first frame — no flash of the wrong colours
+  // while main.js's init() is still getting to it.
+  (function(){
+    try{
+      document.documentElement.setAttribute('data-theme', localStorage.getItem('mba_theme') || 'dark');
+      var user = localStorage.getItem('mba_user');
+      if(user === 'S' || user === 'K') document.documentElement.setAttribute('data-profile', user);
+    }catch(e){ /* localStorage unavailable (private mode etc.) — defaults apply */ }
+  })();
+</script>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-text">Trimester</span>
+    </div>
+    <div class="nav-group">
+      <button class="nav-item active" data-view="dashboard"><span class="nav-ic">◎</span><span>Today</span></button>
+      <button class="nav-item" data-view="calendar"><span class="nav-ic">▦</span><span>Calendar</span></button>
+      <button class="nav-item" data-view="courses"><span class="nav-ic">◫</span><span>Courses</span></button>
+      <button class="nav-item" data-view="attendance"><span class="nav-ic">✓</span><span>Attendance</span></button>
+      <button class="nav-item" data-view="settings"><span class="nav-ic">⚙</span><span>Settings</span></button>
+    </div>
+    <div class="sidebar-foot">
+      <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+        <span id="themeIcon">☾</span>
+      </button>
+      <div id="syncStatus" class="sync-status">Synced</div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <header class="topbar" id="topbar">
+      <div class="topbar-left">
+        <h1 id="viewTitle">Today</h1>
+        <div id="viewSubtitle" class="view-subtitle"></div>
+      </div>
+      <div class="topbar-right" id="topbarControls"></div>
+    </header>
+
+    <section id="viewHost" class="view-host"></section>
+
+  </main>
+</div>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bn-item active" data-view="dashboard">◎</button>
+  <button class="bn-item" data-view="calendar">▦</button>
+  <button class="bn-item" data-view="courses">◫</button>
+  <button class="bn-item" data-view="attendance">✓</button>
+  <button class="bn-item" data-view="settings">⚙</button>
+</nav>
+
+<!-- Modal root -->
+<div id="modalRoot" class="modal-root" aria-hidden="true"></div>
+
+<!-- Toasts -->
+<div id="toasts" class="toasts"></div>
+
+<script src="js/api.js"></script>
+<script src="js/state.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+/* ============ Tokens ============ */
+:root{
+  --danger:#ff6b6b;
+  --success:#33d17a;
+  --warning:#f5c451;
+  --info:#6fb3ff;
+
+  --radius-l:18px;
+  --radius-m:12px;
+  --radius-s:8px;
+  --gap:16px;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --sidebar-w:236px;
+}
+
+/* ============ Profile accent ============
+   Each profile gets its own accent colour throughout the whole UI — K
+   stays on the app's original lavender, S gets a red instead. This is set
+   via a `data-profile="S"|"K"` attribute on <html>, applied as early as
+   possible (see the inline script in index.html's <head>) so there's no
+   flash of the wrong colour on load. Before a profile is chosen, it falls
+   back to the same lavender K uses. */
+:root, [data-profile="K"]{
+  --accent:#e1abf5;
+  --accent-ink:#3a1544;
+  --accent-soft:rgba(225,171,245,.16);
+  --accent-soft-2:rgba(225,171,245,.28);
+}
+[data-profile="S"]{
+  --accent:#ff453a;
+  --accent-ink:#ffffff;
+  --accent-soft:rgba(255,69,58,.16);
+  --accent-soft-2:rgba(255,69,58,.28);
+}
+
+:root, [data-theme="dark"]{
+  --bg:#000000;
+  --surface:#1c1c1e;
+  --surface-2:#2c2c2e;
+  --surface-3:#3a3a3c;
+  --text:#f5f5f7;
+  --text-dim:#a1a1a6;
+  --text-faint:#6e6e73;
+  --sep:rgba(255,255,255,.09);
+  --sep-strong:rgba(255,255,255,.16);
+  --shadow:0 8px 30px rgba(0,0,0,.45);
+  --blur-bg:rgba(28,28,30,.72);
+  color-scheme: dark;
+}
+
+[data-theme="light"]{
+  --bg:#f5f5f7;
+  --surface:#ffffff;
+  --surface-2:#f0f0f2;
+  --surface-3:#e6e6e9;
+  --text:#1d1d1f;
+  --text-dim:#6e6e73;
+  --text-faint:#8e8e93;
+  --sep:rgba(0,0,0,.08);
+  --sep-strong:rgba(0,0,0,.14);
+  --shadow:0 8px 30px rgba(0,0,0,.10);
+  --blur-bg:rgba(255,255,255,.72);
+  color-scheme: light;
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+button,input,select,textarea{font-family:var(--font);}
+button{cursor:pointer;}
+::selection{background:var(--accent-soft-2);}
+a{color:var(--accent);}
+
+/* ============ App shell ============ */
+#app{
+  display:flex;
+  height:100vh;
+  height:100dvh;
+}
+
+.sidebar{
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--sep);
+  display:flex;
+  flex-direction:column;
+  padding:calc(20px + env(safe-area-inset-top,0px)) 12px 16px;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 10px 22px;
+  font-weight:600;font-size:17px;
+}
+.brand-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+.nav-group{display:flex;flex-direction:column;gap:2px;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  background:none;border:none;color:var(--text-dim);
+  padding:9px 12px;border-radius:var(--radius-s);
+  font-size:14.5px;font-weight:500;text-align:left;
+  transition:background .15s ease, color .15s ease;
+}
+.nav-item:hover{background:var(--surface-2);color:var(--text);}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);}
+.nav-ic{width:18px;text-align:center;font-size:14px;}
+.sidebar-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding:8px 6px 0;}
+.theme-toggle{
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--sep-strong);
+  background:var(--surface-2);color:var(--text);font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+}
+.sync-status{font-size:11px;color:var(--text-faint);}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+
+.topbar{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  padding:calc(22px + env(safe-area-inset-top,0px)) 28px 14px;
+  border-bottom:1px solid var(--sep);
+  background:var(--blur-bg);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  position:sticky;top:0;z-index:5;
+  flex-wrap:wrap;
+}
+.topbar h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.02em;}
+.view-subtitle{color:var(--text-dim);font-size:13.5px;margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+.view-host{flex:1;overflow-y:auto;padding:22px 28px 100px;}
+
+/* ============ Controls ============ */
+.btn{
+  border:1px solid var(--sep-strong);background:var(--surface-2);color:var(--text);
+  padding:8px 14px;border-radius:var(--radius-s);font-size:13.5px;font-weight:600;
+  display:inline-flex;align-items:center;gap:6px;transition:transform .1s ease, background .15s ease;
+}
+.btn:hover{background:var(--surface-3);}
+.btn:active{transform:scale(.97);}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn-accent:hover{filter:brightness(1.05);}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text);}
+.btn-danger{background:transparent;border-color:var(--sep-strong);color:var(--danger);}
+.btn-danger:hover{background:rgba(255,107,107,.12);}
+.btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:50%;}
+.btn-sm{padding:5px 10px;font-size:12.5px;}
+
+.segmented{
+  display:inline-flex;background:var(--surface-2);border-radius:var(--radius-s);padding:3px;gap:2px;
+}
+.segmented button{
+  border:none;background:transparent;color:var(--text-dim);padding:6px 13px;border-radius:7px;
+  font-size:13px;font-weight:600;
+}
+.segmented button.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.25);}
+[data-theme="light"] .segmented button.active{box-shadow:0 1px 3px rgba(0,0,0,.12);}
+
+.icon-nav{display:flex;align-items:center;gap:4px;}
+
+/* ============ Cards / lists ============ */
+.card{
+  background:var(--surface);border:1px solid var(--sep);border-radius:var(--radius-l);
+  padding:18px;
+}
+.card + .card{margin-top:12px;}
+.section-label{
+  font-size:12px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;
+  margin:22px 2px 10px;
+}
+.section-label:first-child{margin-top:0;}
+
+.agenda-item{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 4px;border-bottom:1px solid var(--sep);
+}
+.agenda-item:last-child{border-bottom:none;}
+.agenda-time{width:78px;flex-shrink:0;font-size:12.5px;color:var(--text-dim);font-variant-numeric:tabular-nums;padding-top:2px;}
+.agenda-bar{width:3px;border-radius:2px;align-self:stretch;flex-shrink:0;background:var(--bar-color, var(--accent));}
+.agenda-body{flex:1;min-width:0;}
+.agenda-title{font-size:14.5px;font-weight:600;}
+.agenda-meta{font-size:12.5px;color:var(--text-dim);margin-top:2px;display:flex;flex-wrap:wrap;gap:8px;}
+.agenda-item.cancelled .agenda-title{text-decoration:line-through;color:var(--text-faint);}
+.agenda-item.cancelled{opacity:.6;}
+
+.brief-day{display:flex;gap:12px;padding:9px 4px;border-bottom:1px solid var(--sep);align-items:baseline;flex-wrap:wrap;}
+.brief-day:last-child{border-bottom:none;}
+.brief-day-label{font-size:12px;font-weight:700;color:var(--text-dim);width:70px;flex-shrink:0;}
+.brief-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0;}
+.brief-chip{font-size:11.5px;padding:3px 9px;border-radius:20px;background:var(--surface-2);color:var(--text-dim);white-space:nowrap;}
+.brief-chip.cancelled{text-decoration:line-through;opacity:.5;}
+
+.badge{
+  display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:20px;background:var(--surface-2);color:var(--text-dim);
+  text-transform:none;
+}
+.badge-accent{background:var(--accent-soft);color:var(--accent);}
+.badge-danger{background:rgba(255,107,107,.15);color:var(--danger);}
+.badge-success{background:rgba(51,209,122,.15);color:var(--success);}
+.badge-warning{background:rgba(245,196,81,.18);color:var(--warning);}
+.badge-info{background:rgba(111,179,255,.15);color:var(--info);}
+.badge-deliverable{background:rgba(111,179,255,.15);color:var(--info);}
+
+/* Deliverables (assignments/projects) read as distinct from in-session items:
+   dashed accents instead of solid ones, everywhere they appear. */
+.agenda-item.deliverable .agenda-bar{background:repeating-linear-gradient(-45deg, var(--bar-color, var(--info)) 0 3px, transparent 3px 6px);}
+.cell-chip.deliverable{border-left-style:dashed;}
+.tl-event.deliverable{border-left-style:dashed;}
+
+.empty-state{
+  text-align:center;color:var(--text-faint);padding:60px 20px;font-size:14px;
+}
+.empty-state .empty-emoji{font-size:32px;display:block;margin-bottom:10px;}
+
+/* ============ Calendar: month ============ */
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--sep);border:1px solid var(--sep);border-radius:var(--radius-m);overflow:hidden;}
+.month-dow{background:var(--surface-2);padding:8px 0;text-align:center;font-size:11px;font-weight:700;color:var(--text-faint);text-transform:uppercase;}
+.month-cell{background:var(--surface);min-height:104px;padding:6px;display:flex;flex-direction:column;gap:4px;}
+.month-cell.other-month{background:var(--bg);}
+.month-cell.today .cell-date{background:var(--accent);color:var(--accent-ink);}
+.cell-date{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-dim);}
+.month-cell.other-month .cell-date{color:var(--text-faint);}
+.cell-chip{
+  font-size:10.5px;padding:2px 6px;border-radius:6px;background:var(--surface-2);color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;border-left:3px solid var(--accent);
+}
+.cell-chip.cancelled{opacity:.5;text-decoration:line-through;}
+.cell-more{font-size:10px;color:var(--text-faint);padding-left:2px;}
+
+/* ============ Calendar: day/week timeline ============ */
+.timeline-wrap{display:flex;border:1px solid var(--sep);border-radius:var(--radius-m);overflow:hidden;background:var(--surface);}
+.timeline-scroll{flex:1;overflow-x:auto;}
+.timeline{position:relative;display:grid;}
+.tl-hours{position:sticky;left:0;background:var(--surface);z-index:2;}
+.tl-hour-label{height:64px;font-size:11px;color:var(--text-faint);text-align:right;padding-right:8px;border-top:1px solid var(--sep);transform:translateY(-6px);}
+.tl-col{position:relative;border-left:1px solid var(--sep);min-width:150px;}
+.tl-col-head{
+  position:sticky;top:0;background:var(--surface);padding:10px 8px;text-align:center;border-bottom:1px solid var(--sep);z-index:3;
+}
+.tl-col-head .dow{font-size:11px;color:var(--text-faint);text-transform:uppercase;font-weight:700;}
+.tl-col-head .dnum{font-size:16px;font-weight:700;margin-top:2px;}
+.tl-col-head.today .dnum{color:var(--accent);}
+.tl-slot{height:64px;border-top:1px solid var(--sep);}
+.tl-event{
+  position:absolute;left:4px;right:4px;border-radius:8px;padding:5px 7px;font-size:11.5px;overflow:hidden;
+  background:var(--accent-soft-2);border-left:3px solid var(--accent);color:var(--text);cursor:pointer;
+}
+.tl-event .te-title{font-weight:700;line-height:1.2;}
+.tl-event .te-course{font-size:10.5px;font-weight:600;opacity:.85;line-height:1.2;margin-top:1px;}
+.tl-event .te-meta{color:var(--text-dim);font-size:10.5px;margin-top:1px;}
+.tl-event.cancelled{opacity:.45;text-decoration:line-through;}
+
+/* ============ Trimester agenda view ============ */
+.week-block{margin-bottom:22px;}
+.week-block-head{font-size:13px;font-weight:700;color:var(--text-dim);margin-bottom:8px;padding-left:2px;}
+
+/* ============ Courses ============ */
+.course-card{display:flex;align-items:center;gap:14px;}
+.course-swatch{width:10px;height:44px;border-radius:6px;flex-shrink:0;}
+.course-main{flex:1;min-width:0;}
+.course-name{font-size:15.5px;font-weight:700;}
+.course-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+.course-progress{width:100%;height:5px;border-radius:3px;background:var(--surface-2);margin-top:8px;overflow:hidden;}
+.course-progress-bar{height:100%;background:var(--accent);}
+
+/* ============ Forms ============ */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.form-field.full{grid-column:1/-1;}
+.form-field label{font-size:12.5px;font-weight:600;color:var(--text-dim);}
+.form-field input, .form-field select, .form-field textarea{
+  background:var(--surface-2);border:1px solid var(--sep-strong);border-radius:var(--radius-s);
+  padding:9px 11px;font-size:14px;color:var(--text);outline:none;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus{border-color:var(--accent);}
+.form-field textarea{resize:vertical;min-height:56px;}
+.dow-picker{display:flex;gap:6px;flex-wrap:wrap;}
+.dow-chip{
+  width:38px;height:38px;border-radius:50%;background:var(--surface-2);border:1px solid var(--sep-strong);
+  color:var(--text-dim);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+.dow-chip.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.hint{font-size:11.5px;color:var(--text-faint);margin-top:-4px;}
+
+/* ============ Modal ============ */
+.modal-root{position:fixed;inset:0;display:none;align-items:flex-end;justify-content:center;z-index:50;}
+.modal-root.open{display:flex;}
+/* A blurred backdrop has to recompute against everything behind it (often
+   a busy calendar full of coloured blocks) every time a modal opens — a
+   solid overlay looks nearly identical and costs the browser nothing. */
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+.modal-sheet{
+  position:relative;background:var(--surface);width:min(560px,100%);max-height:88vh;overflow-y:auto;
+  border-radius:20px 20px 0 0;padding:20px 22px calc(28px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow);
+  animation:sheetUp .16s ease-out;
+  will-change:transform;
+}
+@media(min-width:720px){
+  .modal-root{align-items:center;}
+  .modal-sheet{border-radius:20px;max-height:82vh;}
+}
+@keyframes sheetUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.modal-head h2{font-size:18px;margin:0;}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--sep);flex-wrap:wrap;}
+.modal-foot .left{margin-right:auto;display:flex;gap:8px;}
+
+/* ============ Toasts ============ */
+.toasts{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;}
+.toast{
+  background:var(--surface-3);color:var(--text);padding:10px 16px;border-radius:12px;font-size:13.5px;
+  box-shadow:var(--shadow);animation:toastIn .2s ease;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============ Mobile nav ============ */
+.bottom-nav{display:none;}
+
+@media (max-width:860px){
+  .sidebar{display:none;}
+  .bottom-nav{
+    display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--blur-bg);backdrop-filter:blur(10px);
+    border-top:1px solid var(--sep);padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));z-index:40;
+  }
+  .bn-item{flex:1;background:none;border:none;color:var(--text-faint);font-size:19px;padding:6px 0;border-radius:10px;}
+  .bn-item.active{color:var(--accent);}
+  .view-host{padding:16px 16px 90px;}
+  .topbar{padding:calc(16px + env(safe-area-inset-top,0px)) 16px 12px;}
+  .form-grid{grid-template-columns:1fr;}
+
+  /* Days packed with chips were stretching the whole month-grid row on
+     narrow screens (a CSS grid row sizes to its tallest cell). Cap the
+     cell height here and let it scroll internally instead — desktop is
+     untouched since this only applies under the 860px breakpoint. */
+  .month-cell{min-height:72px;max-height:92px;overflow-y:auto;}
+}
