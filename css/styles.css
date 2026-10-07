@@ -260,6 +260,41 @@ a{color:var(--accent);}
 .tl-event .te-meta{color:var(--text-dim);font-size:10.5px;margin-top:1px;}
 .tl-event.cancelled{opacity:.45;text-decoration:line-through;}
 
+/* ============ Today/Tomorrow comparison table ============
+   Same visual language as the day/week timeline (hour rows down the left,
+   absolutely-positioned event blocks) but with exactly two content
+   columns — this profile vs the other — instead of one per day, so a
+   time slot's events line up side by side for comparison. */
+.cmp-wrap{border:1px solid var(--sep);border-radius:var(--radius-m);overflow:hidden;background:var(--surface);}
+.cmp-header{display:flex;border-bottom:1px solid var(--sep);}
+.cmp-header-time{width:56px;flex-shrink:0;}
+.cmp-header-col{flex:1;padding:10px 10px;font-size:12.5px;font-weight:700;text-align:center;border-left:1px solid var(--sep);}
+.cmp-header-col.cmp-tint-S{background:rgba(255,69,58,.10);color:#ff6961;}
+.cmp-header-col.cmp-tint-K{background:rgba(225,171,245,.14);color:#e1abf5;}
+.cmp-body{display:flex;position:relative;}
+.cmp-time-col{width:56px;flex-shrink:0;}
+.cmp-time-label{height:64px;font-size:11px;color:var(--text-faint);text-align:right;padding-right:8px;border-top:1px solid var(--sep);transform:translateY(-6px);}
+.cmp-content{flex:1;display:flex;position:relative;}
+.cmp-col{flex:1;position:relative;border-left:1px solid var(--sep);}
+.cmp-col.cmp-tint-S{background:rgba(255,69,58,.05);}
+.cmp-col.cmp-tint-K{background:rgba(225,171,245,.07);}
+.cmp-slot{height:64px;border-top:1px solid var(--sep);}
+.cmp-event{
+  position:absolute;left:4px;right:4px;border-radius:8px;padding:5px 7px;font-size:11px;overflow:hidden;
+  background:var(--surface-2);border-left:3px solid var(--accent);cursor:pointer;
+}
+.cmp-event.cmp-readonly{cursor:default;}
+.cmp-event .ce-title{font-weight:700;line-height:1.2;color:var(--text);}
+.cmp-event .ce-meta{color:var(--text-dim);font-size:10px;margin-top:1px;}
+.cmp-event.cancelled{opacity:.45;text-decoration:line-through;}
+.cmp-now-line{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--danger);z-index:4;pointer-events:none;}
+.cmp-now-line::before{
+  content:'';position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--danger);
+}
+.cmp-allday{display:flex;border-bottom:1px solid var(--sep);}
+.cmp-allday-label{width:56px;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:10px;color:var(--text-faint);}
+.cmp-allday-col{flex:1;padding:8px 8px;display:flex;flex-wrap:wrap;gap:5px;border-left:1px solid var(--sep);}
+
 /* ============ Trimester agenda view ============ */
 .week-block{margin-bottom:22px;}
 .week-block-head{font-size:13px;font-weight:700;color:var(--text-dim);margin-bottom:8px;padding-left:2px;}
