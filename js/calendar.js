@@ -123,6 +123,95 @@ function renderTimeline(host, days){
   });
 }
 
+/* ---------- Today/Tomorrow comparison table ----------
+   Same hour-row/absolute-position approach as renderTimeline, but with
+   exactly two content columns (this profile, the other profile) sharing
+   one time axis, so a given time slot's events from each side land next
+   to each other. Pass the date these events are *for* (not "now") only to
+   decide whether to draw the current-time guide against it — the guide
+   itself always reflects the actual current clock time. */
+function nowLineOffset(){
+  const now = new Date();
+  const mins = now.getHours()*60 + now.getMinutes();
+  if(mins < CAL_START_MIN || mins > CAL_END_MIN) return null;
+  return (mins - CAL_START_MIN)/60*PX_PER_HOUR;
+}
+
+function renderCompareTable(host, selfEvents, selfTag, otherEvents, otherTag, otherName){
+  const hourCount = (CAL_END_MIN - CAL_START_MIN)/60;
+  let hourLabels = '';
+  for(let h=0; h<=hourCount; h++){
+    hourLabels += `<div class="cmp-time-label">${fmtTime(minutesToTime(CAL_START_MIN+h*60))}</div>`;
+  }
+
+  function slotsHtml(){
+    let s=''; for(let h=0;h<hourCount;h++) s+=`<div class="cmp-slot"></div>`;
+    return s;
+  }
+
+  function eventsHtml(events, courses, clickable){
+    return events.filter(ev=>ev.startTime).map(ev=>{
+      const startMin = Math.max(timeToMinutes(ev.startTime), CAL_START_MIN);
+      const endMin = ev.endTime ? Math.max(timeToMinutes(ev.endTime), startMin+20) : startMin+80;
+      const top = (startMin-CAL_START_MIN)/60*PX_PER_HOUR;
+      const height = Math.max((endMin-startMin)/60*PX_PER_HOUR, MIN_EVENT_PX);
+      const cancelled = ev.status==='cancelled';
+      const color = courses ? colorForEventIn(ev, courses) : colorForEvent(ev);
+      const courseName = courses ? courseNameIn(courses, ev.courseId) : (ev.courseId ? courseById(ev.courseId)?.name : null);
+      const meta = TYPE_META[ev.type]||TYPE_META.other;
+      const title = ev.title || courseName || meta.label;
+      return `<div class="cmp-event ${cancelled?'cancelled':''} ${clickable?'':'cmp-readonly'}" ${clickable?`data-id="${ev.id}"`:''} style="top:${top}px;height:${height}px;border-left-color:${color};">
+        <div class="ce-title">${escapeHtml(title)}</div>
+        <div class="ce-meta">${fmtTime(ev.startTime)}${ev.endTime?'–'+fmtTime(ev.endTime):''}${ev.room?' · '+escapeHtml(ev.room):''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  const nowTop = nowLineOffset();
+  const nowLine = nowTop!==null ? `<div class="cmp-now-line" style="top:${nowTop}px;"></div>` : '';
+
+  function allDayChip(ev, courses, clickable){
+    const courseName = courses ? courseNameIn(courses, ev.courseId) : (ev.courseId ? courseById(ev.courseId)?.name : null);
+    const label = ev.title || courseName || (TYPE_META[ev.type]||TYPE_META.other).label;
+    const cancelled = ev.status==='cancelled';
+    return `<span class="brief-chip ${cancelled?'cancelled':''}" ${clickable?`data-id="${ev.id}" style="cursor:pointer;"`:''}>${escapeHtml(label)}</span>`;
+  }
+  const selfUntimed = selfEvents.filter(ev=>!ev.startTime);
+  const otherUntimed = otherEvents.filter(ev=>!ev.startTime);
+  const alldayRow = (selfUntimed.length || otherUntimed.length) ? `
+      <div class="cmp-allday">
+        <div class="cmp-allday-label">No time</div>
+        <div class="cmp-allday-col cmp-tint-${selfTag}">${selfUntimed.map(ev=>allDayChip(ev, null, true)).join('')}</div>
+        <div class="cmp-allday-col cmp-tint-${otherTag}">${otherUntimed.map(ev=>allDayChip(ev, STATE.other?.courses, false)).join('')}</div>
+      </div>` : '';
+
+  host.innerHTML = `
+    <div class="cmp-wrap">
+      <div class="cmp-header">
+        <div class="cmp-header-time"></div>
+        <div class="cmp-header-col cmp-tint-${selfTag}">You</div>
+        <div class="cmp-header-col cmp-tint-${otherTag}">${escapeHtml(otherName)}</div>
+      </div>
+      ${alldayRow}
+      <div class="cmp-body">
+        <div class="cmp-time-col">${hourLabels}</div>
+        <div class="cmp-content">
+          <div class="cmp-col cmp-tint-${selfTag}">${slotsHtml()}${eventsHtml(selfEvents, null, true)}</div>
+          <div class="cmp-col cmp-tint-${otherTag}">${slotsHtml()}${eventsHtml(otherEvents, STATE.other?.courses, false)}</div>
+          ${nowLine}
+        </div>
+      </div>
+    </div>`;
+
+  host.querySelectorAll('.cmp-allday [data-id]').forEach(el=>{
+    el.addEventListener('click', ()=>openEventModal(el.dataset.id));
+  });
+
+  host.querySelectorAll('.cmp-event[data-id]').forEach(el=>{
+    el.addEventListener('click', ()=>openEventModal(el.dataset.id));
+  });
+}
+
 /* ---------- Month ---------- */
 function renderMonth(host, anchor){
   const year = anchor.getFullYear(), month = anchor.getMonth();
@@ -227,29 +316,9 @@ function escapeHtml(s){
   return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-/* ---------- other user's events (cross-visibility on the Today tab) ----------
+/* ---------- other user's events (cross-visibility: "week in brief") ----------
    Read-only: no data-id / click handler, since these events aren't ours to
    open or edit. Course lookups use the other person's own courses array. */
-function otherAgendaItemHtml(ev, otherCourses){
-  const meta = TYPE_META[ev.type]||TYPE_META.other;
-  const courseName = courseNameIn(otherCourses, ev.courseId);
-  const cancelled = ev.status==='cancelled';
-  return `
-    <div class="agenda-item ${cancelled?'cancelled':''} ${isDeliverable(ev.type)?'deliverable':''}">
-      <div class="agenda-time">${fmtTime(ev.startTime)}${ev.endTime?' – '+fmtTime(ev.endTime):''}</div>
-      <div class="agenda-bar" style="--bar-color:${colorForEventIn(ev, otherCourses)}"></div>
-      <div class="agenda-body">
-        <div class="agenda-title">${escapeHtml(ev.title || courseName || meta.label)}</div>
-        <div class="agenda-meta">
-          <span class="badge ${meta.badge}">${meta.label}</span>
-          ${courseName?`<span>${escapeHtml(courseName)}</span>`:''}
-          ${ev.room?`<span>Rm ${escapeHtml(ev.room)}</span>`:''}
-          ${cancelled?`<span class="badge badge-danger">Cancelled</span>`:''}
-        </div>
-      </div>
-    </div>`;
-}
-
 function otherWeekBriefHtml(events, otherCourses){
   if(!events.length) return `<div class="empty-state" style="padding:16px;">Nothing scheduled</div>`;
   const byDate = {};

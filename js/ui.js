@@ -468,48 +468,34 @@ function submitAttendance(eventId){
 function renderDashboard(host){
   const today = new Date();
   const tomorrow = addDays(today,1);
-  const tri = activeTrimester();
   const todays = eventsOnDate(today);
   const tomorrows = eventsOnDate(tomorrow);
   const dayBounds = computeDayBounds(tomorrows);
 
   // "Coming week" starts the day after tomorrow, since tomorrow gets its
-  // own detailed section above it — avoids showing the same day twice.
+  // own comparison table above it — avoids showing the same day twice.
   const weekAhead = eventsInRange(addDays(today,2), addDays(today,6));
   const byDate = {};
   weekAhead.forEach(ev=>{ (byDate[ev.date] ||= []).push(ev); });
 
   const other = STATE.other; // {name, events, courses} or null
-  let otherTomorrow = [], otherWeek = [];
+  const selfTag = API.getActiveUser();
+  let otherTodays = [], otherTomorrows = [], otherWeek = [];
   if(other){
-    const tISO = toISO(tomorrow);
-    otherTomorrow = other.events.filter(e=>e.date===tISO).sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||''));
+    const todayISO = toISO(today), tomorrowISO = toISO(tomorrow);
+    otherTodays = other.events.filter(e=>e.date===todayISO);
+    otherTomorrows = other.events.filter(e=>e.date===tomorrowISO);
     const wStart = toISO(tomorrow), wEnd = toISO(addDays(today,6));
     otherWeek = other.events.filter(e=>e.date>=wStart && e.date<=wEnd);
   }
 
   host.innerHTML = `
-    ${tri ? `<div class="card" style="margin-bottom:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div><div style="font-weight:700;font-size:15px;">${escapeHtml(tri.name)}</div>
-        <div class="view-subtitle">Started ${fmtDateShort(fromISO(tri.startDate))}${tri.endDate?' · Ends '+fmtDateShort(fromISO(tri.endDate)):''}</div></div>
-        <button class="btn btn-sm" onclick="switchView('calendar')">Open calendar →</button>
-      </div>` : `<div class="card" style="margin-bottom:18px;">No trimester set up yet. <button class="btn btn-accent btn-sm" onclick="openTrimesterModal()">Set up trimester</button></div>`}
-
     <div class="section-label">Today</div>
-    <div class="card">
-      ${todays.length ? todays.map(ev=>agendaItemHtml(ev,false)).join('') : `<div class="empty-state" style="padding:20px;"><span class="empty-emoji">☕</span>Nothing scheduled today</div>`}
-    </div>
+    <div id="cmpToday"></div>
 
     <div class="section-label">Tomorrow</div>
-    ${dayBounds ? `<div class="hint" style="margin:-4px 0 8px 2px;">Day starts ${fmtTime(dayBounds.start)} · ends ${fmtTime(dayBounds.end)}</div>` : ''}
-    <div class="card">
-      ${tomorrows.length ? tomorrows.map(ev=>agendaItemHtml(ev,false)).join('') : `<div class="empty-state" style="padding:20px;">Nothing scheduled</div>`}
-    </div>
-
-    ${other ? `
-    <div class="section-label">${escapeHtml(other.name)}'s tomorrow</div>
-    <div class="card">${otherTomorrow.length ? otherTomorrow.map(ev=>otherAgendaItemHtml(ev, other.courses)).join('') : `<div class="empty-state" style="padding:16px;">Nothing scheduled</div>`}</div>
-    ` : ''}
+    ${dayBounds ? `<div class="hint" style="margin:-4px 0 8px 2px;">Your day starts ${fmtTime(dayBounds.start)} · ends ${fmtTime(dayBounds.end)}</div>` : ''}
+    <div id="cmpTomorrow"></div>
 
     <div class="section-label">Coming week</div>
     ${Object.keys(byDate).length ? Object.keys(byDate).sort().map(dISO=>`
@@ -524,6 +510,17 @@ function renderDashboard(host){
     <div class="card">${otherWeekBriefHtml(otherWeek, other.courses)}</div>
     ` : ''}
   `;
+
+  if(other){
+    renderCompareTable(document.getElementById('cmpToday'), todays, selfTag, otherTodays, other.name, other.name);
+    renderCompareTable(document.getElementById('cmpTomorrow'), tomorrows, selfTag, otherTomorrows, other.name, other.name);
+  } else {
+    // No other profile's data yet (not set up, or unreachable) — fall back
+    // to a plain single-column agenda rather than a one-sided "table".
+    document.getElementById('cmpToday').innerHTML = `<div class="card">${todays.length ? todays.map(ev=>agendaItemHtml(ev,false)).join('') : `<div class="empty-state" style="padding:20px;"><span class="empty-emoji">☕</span>Nothing scheduled today</div>`}</div>`;
+    document.getElementById('cmpTomorrow').innerHTML = `<div class="card">${tomorrows.length ? tomorrows.map(ev=>agendaItemHtml(ev,false)).join('') : `<div class="empty-state" style="padding:20px;">Nothing scheduled</div>`}</div>`;
+  }
+
   host.querySelectorAll('.agenda-item[data-id]').forEach(el=>el.addEventListener('click', ()=>openEventModal(el.dataset.id)));
 }
 
